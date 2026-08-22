@@ -1,0 +1,13 @@
+buzz-tui
+Copyright 2026 Ian Borders
+
+This product includes software developed at Block, Inc.
+(https://github.com/block/buzz), licensed under the Apache License 2.0.
+
+src/session.rs is a port of desktop/src-tauri/src/native_relay_client.rs from
+that project. Its connection policy — reconnect backoff, subscription
+reconciliation, and CLOSED classification and recovery — is that module's
+design, kept deliberately close to the original so the two do not drift.
+
+This client also depends on buzz-core, buzz-sdk and buzz-ws-client from the
+same project.

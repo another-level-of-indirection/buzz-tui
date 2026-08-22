@@ -1,0 +1,67 @@
+[package]
+name = "buzz-tui"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88.0"
+license = "Apache-2.0"
+description = "Terminal client for a Buzz relay"
+repository = "https://github.com/ianborders/buzz-tui"
+
+[[bin]]
+name = "buzz-tui"
+path = "src/main.rs"
+
+# ── Buzz ────────────────────────────────────────────────────────────────────
+# Pinned to a revision rather than a branch. block/buzz moves fast — it merged
+# PR #6359 the day this client was started — and an unpinned dependency would
+# mean the build breaking on someone else's schedule. Bump deliberately.
+[dependencies.buzz-sdk]
+git = "https://github.com/block/buzz.git"
+rev = "84c095f8bea14b55373e2d867100abe37aa6061e"
+
+[dependencies.buzz-core]
+git = "https://github.com/block/buzz.git"
+rev = "84c095f8bea14b55373e2d867100abe37aa6061e"
+
+[dependencies.buzz-ws-client]
+git = "https://github.com/block/buzz.git"
+rev = "84c095f8bea14b55373e2d867100abe37aa6061e"
+
+[dependencies]
+# Versions match block/buzz's workspace at the pinned revision, so this client
+# and the crates it borrows from agree on one set.
+nostr = { version = "0.44", features = ["nip44", "nip98"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio-util = { version = "0.7", features = ["rt", "codec"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1"
+futures-util = "0.3"
+zeroize = "1.8"
+
+# Markdown. `html` is off: this renders to terminal cells, never to markup.
+pulldown-cmark = { version = "0.13.4", default-features = false }
+
+# Terminal UI.
+ratatui = "0.30"
+# `event-stream` gives an async key-event stream, which is what keeps input
+# handling off the socket task.
+crossterm = { version = "0.29", features = ["event-stream"] }
+# Grapheme-aware widths. Terminal cells are not chars.
+unicode-width = "0.2"
+unicode-segmentation = "1"
+
+# Platform config dir, for the community list and NIP-RS identifiers.
+dirs = "6"
+# OS keychain for the secret key. An env var is visible in `ps` output and to
+# every child process; a keychain entry is not.
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
+# Hidden prompt for `--keychain-import`.
+rpassword = "7"
+
+# rustls with an explicit ring provider, matching buzz-cli: a build that
+# unifies both ring and aws-lc-rs features leaves rustls unable to auto-select
+# a provider and it panics on first TLS use.
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
