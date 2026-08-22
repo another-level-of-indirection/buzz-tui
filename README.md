@@ -58,9 +58,19 @@ buzz-tui --add-community https://your-community.example.com
 buzz-tui --communities        # what is configured
 ```
 
-`--remove-community <url>` takes one out. `BUZZ_RELAY_URL` accepts a
-comma-separated list and still leads the ordering when set, which is useful as
-a one-off override.
+```sh
+buzz-tui --name-community <url> Kybernesis   # what the sidebar calls it
+buzz-tui --name-community <url> ""           # back to the default
+buzz-tui --remove-community <url>
+```
+
+Naming is manual because there is nothing to read: every Buzz deployment
+answers NIP-11 with the same generic `"Buzz Relay"`, so a community's name is
+something the client decides, exactly as it is in Buzz Desktop. Left unset, the
+first label of the relay host stands in — a guess, but a serviceable one.
+
+`BUZZ_RELAY_URL` accepts a comma-separated list and still leads the ordering
+when set, which is useful as a one-off override.
 
 ### 4. Run it
 

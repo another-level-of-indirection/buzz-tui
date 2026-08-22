@@ -21,6 +21,15 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     #[serde(default)]
     pub communities: Vec<String>,
+    /// Display names, keyed by relay URL.
+    ///
+    /// A separate map rather than a field on each entry, so a config written
+    /// before names existed still loads. There is nothing to read from the
+    /// relay: every Buzz deployment answers NIP-11 with the same generic
+    /// `"Buzz Relay"`, so a community's name is something the person running
+    /// the client decides, exactly as it is in Buzz Desktop.
+    #[serde(default)]
+    pub names: std::collections::HashMap<String, String>,
 }
 
 fn path() -> Option<PathBuf> {
@@ -65,15 +74,37 @@ pub fn add(url: &str, env: Option<&str>) -> Result<Vec<String>> {
     if !communities.contains(&url) {
         communities.push(url);
     }
-    let config = Config { communities };
+    let config = Config {
+        communities,
+        names: load().names,
+    };
     save(&config)?;
     Ok(config.communities)
+}
+
+/// Sets a community's display name, or clears it when `name` is empty.
+pub fn set_name(url: &str, name: &str) -> Result<Vec<String>> {
+    let url = normalize(url);
+    let mut config = load();
+    if name.trim().is_empty() {
+        config.names.remove(&url);
+    } else {
+        config.names.insert(url, name.trim().to_string());
+    }
+    save(&config)?;
+    Ok(config.communities)
+}
+
+/// The name chosen for a community, if any.
+pub fn name_for(url: &str) -> Option<String> {
+    load().names.get(&normalize(url)).cloned()
 }
 
 pub fn remove(url: &str) -> Result<Vec<String>> {
     let url = normalize(url);
     let mut config = load();
     config.communities.retain(|known| *known != url);
+    config.names.remove(&url);
     save(&config)?;
     Ok(config.communities)
 }
@@ -109,6 +140,7 @@ pub fn seed_if_empty(urls: &[String]) {
     }
     let _ = save(&Config {
         communities: urls.to_vec(),
+        names: Default::default(),
     });
 }
 

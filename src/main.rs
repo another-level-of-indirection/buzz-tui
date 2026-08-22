@@ -99,6 +99,10 @@ async fn main() -> Result<()> {
     if let Some(url) = flag_value(&args, "--remove-community") {
         return print_communities(config::remove(&url)?);
     }
+    if let Some(url) = flag_value(&args, "--name-community") {
+        let name = flag_value_at(&args, "--name-community", 2).unwrap_or_default();
+        return print_communities(config::set_name(&url, &name)?);
+    }
     if args.iter().any(|arg| arg == "--communities") {
         return print_communities(relay_urls());
     }
@@ -147,7 +151,7 @@ async fn main() -> Result<()> {
         workspaces.push(Workspace::new(
             WorkspaceConfig {
                 relay_label: short_host(&ws),
-                name: community_name(&ws),
+                name: display_name(relay, &ws),
                 url: ws,
                 newline_key: newline_key(),
                 help_key: help_key(),
@@ -169,11 +173,12 @@ async fn main() -> Result<()> {
         );
         for relay in &relays {
             println!(
-                "         {:<14} {relay}",
-                community_name(&session::ws_url(relay))
+                "         {:<18} {relay}",
+                display_name(relay, &session::ws_url(relay))
             );
         }
-        let outcome = probe_relay(&sessions[0], &mut session_rx, &keys, &relays[0]).await;
+        let ws_urls: Vec<String> = relays.iter().map(|relay| session::ws_url(relay)).collect();
+        let outcome = probe_relays(&sessions, &ws_urls, &mut session_rx, &keys).await;
         for session in &sessions {
             session.shutdown();
         }
@@ -345,8 +350,13 @@ fn relay_urls() -> Vec<String> {
 
 /// The value following `flag`, for the community-management options.
 fn flag_value(args: &[String], flag: &str) -> Option<String> {
+    flag_value_at(args, flag, 1)
+}
+
+/// The `offset`-th value after `flag`, for options taking more than one.
+fn flag_value_at(args: &[String], flag: &str, offset: usize) -> Option<String> {
     let index = args.iter().position(|arg| arg == flag)?;
-    args.get(index + 1).cloned()
+    args.get(index + offset).cloned()
 }
 
 fn print_communities(urls: Vec<String>) -> Result<()> {
@@ -355,12 +365,22 @@ fn print_communities(urls: Vec<String>) -> Result<()> {
         return Ok(());
     }
     for url in &urls {
-        println!("{:<14} {url}", community_name(&session::ws_url(url)));
+        println!("{:<18} {url}", display_name(url, &session::ws_url(url)));
     }
     Ok(())
 }
 
-/// A community's display name: the first label of its relay host.
+/// A community's display name.
+///
+/// A name the user set, if there is one. Otherwise the first label of the
+/// relay host — a guess, but a serviceable one, since every Buzz deployment
+/// answers NIP-11 with the same generic `"Buzz Relay"` and there is no
+/// community name on the wire to read.
+fn display_name(url: &str, ws: &str) -> String {
+    config::name_for(url).unwrap_or_else(|| community_name(ws))
+}
+
+/// The first label of a relay host.
 fn community_name(url: &str) -> String {
     let host = short_host(url);
     let first = host.split('.').next().unwrap_or(&host);
@@ -799,52 +819,65 @@ fn spawn_presence_heartbeat(session: std::sync::Arc<RelaySession>, keys: Keys) {
     });
 }
 
-/// Connects, authenticates, and walks the same bootstrap the TUI does —
-/// reporting counts and timings at each step, without entering the UI.
+/// Connects and reports on every configured community, then walks one of them.
 ///
-/// A blank channel or an empty transcript has several causes that look
-/// identical from inside a full-screen app: a bad key, a host that maps to no
-/// community, a pubkey that is a member of nothing, a query that returned
-/// nothing, or a query that returned only thread replies (which the timeline
-/// deliberately hides). This separates them.
-async fn probe_relay(
-    session: &RelaySession,
+/// Auth is reported per community: with more than one configured, a single
+/// relay's health says nothing about the one that is actually misbehaving. The
+/// detailed walk runs against the first that authenticated, because running it
+/// for all of them buries the answer in output.
+async fn probe_relays(
+    sessions: &[std::sync::Arc<RelaySession>],
+    urls: &[String],
     session_rx: &mut mpsc::Receiver<(String, SessionEvent)>,
     keys: &Keys,
-    ws: &str,
 ) -> Result<()> {
     use buzz_core::kind::{
         KIND_NIP29_GROUP_MEMBERS, KIND_NIP29_GROUP_METADATA, KIND_PROFILE, KIND_STREAM_MESSAGE,
     };
+    use std::collections::HashMap;
     use std::time::Instant;
 
     let me = keys.public_key().to_hex();
-    println!("relay    {ws}");
     println!("pubkey   {me}");
 
-    let connected = tokio::time::timeout(Duration::from_secs(20), async {
-        while let Some((_, event)) = session_rx.recv().await {
-            match event {
-                SessionEvent::Connected => return Ok(()),
-                SessionEvent::Disconnected(reason) => return Err(reason),
-                _ => {}
+    let mut pending: Vec<String> = urls.to_vec();
+    let mut results: HashMap<String, Result<(), String>> = HashMap::new();
+    let _ = tokio::time::timeout(Duration::from_secs(25), async {
+        while !pending.is_empty() {
+            let Some((url, event)) = session_rx.recv().await else {
+                return;
+            };
+            let outcome = match event {
+                SessionEvent::Connected => Ok(()),
+                SessionEvent::Disconnected(reason) => Err(reason),
+                _ => continue,
+            };
+            if let Some(index) = pending.iter().position(|it| *it == url) {
+                pending.remove(index);
+                results.insert(url, outcome);
             }
         }
-        Err("session ended".to_string())
     })
     .await;
 
-    match connected {
-        Ok(Ok(())) => println!("auth     ok (NIP-42)"),
-        Ok(Err(reason)) => {
-            println!("auth     FAILED: {reason}");
-            return Ok(());
-        }
-        Err(_) => {
-            println!("auth     FAILED: timed out waiting for the relay");
-            return Ok(());
+    for url in urls {
+        let name = community_name(url);
+        match results.get(url) {
+            Some(Ok(())) => println!("auth     {name:<18} ok (NIP-42)"),
+            Some(Err(reason)) => println!("auth     {name:<18} FAILED: {reason}"),
+            None => println!("auth     {name:<18} FAILED: no answer in 25s"),
         }
     }
+
+    let Some(index) = urls
+        .iter()
+        .position(|url| matches!(results.get(url), Some(Ok(()))))
+    else {
+        return Ok(());
+    };
+    let session = &sessions[index];
+    println!();
+    println!("walking  {}", community_name(&urls[index]));
 
     let timeout = Duration::from_secs(20);
     macro_rules! step {
@@ -994,6 +1027,27 @@ mod tests {
             Some("https://a.example.com")
         );
         assert_eq!(flag_value(&args, "--remove-community"), None);
+    }
+
+    #[test]
+    fn a_two_value_flag_reads_both_of_its_arguments() {
+        let args: Vec<String> = [
+            "buzz-tui",
+            "--name-community",
+            "wss://a.example.com",
+            "Kybernesis",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        assert_eq!(
+            flag_value(&args, "--name-community").as_deref(),
+            Some("wss://a.example.com")
+        );
+        assert_eq!(
+            flag_value_at(&args, "--name-community", 2).as_deref(),
+            Some("Kybernesis")
+        );
     }
 
     #[test]
