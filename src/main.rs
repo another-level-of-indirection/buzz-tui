@@ -1062,21 +1062,15 @@ mod tests {
 
     #[test]
     fn a_community_is_named_after_its_subdomain() {
-        assert_eq!(
-            community_name("wss://kybernesis.communities.buzz.xyz"),
-            "kybernesis"
-        );
-        assert_eq!(community_name("wss://lotf.communities.buzz.xyz"), "lotf");
+        assert_eq!(community_name("wss://one.example.com"), "one");
+        assert_eq!(community_name("wss://two.example.com"), "two");
         // A bare host has no subdomain to take, so the host stands in.
         assert_eq!(community_name("ws://localhost:3000"), "localhost:3000");
     }
 
     #[test]
     fn the_status_line_shows_a_host_not_a_url() {
-        assert_eq!(
-            short_host("wss://kybernesis.communities.buzz.xyz"),
-            "kybernesis.communities.buzz.xyz"
-        );
+        assert_eq!(short_host("wss://one.example.com"), "one.example.com");
         assert_eq!(short_host("ws://localhost:3000/"), "localhost:3000");
     }
 }

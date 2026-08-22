@@ -12,9 +12,30 @@ mistake — the app just quietly has no key, or fewer communities than you have.
 
 ### 1. Install
 
+On a machine with Rust already:
+
 ```sh
 cargo install --git https://github.com/ianborders/buzz-tui
 ```
+
+From scratch, including the toolchain:
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   # Rust 1.88+
+. "$HOME/.cargo/env"
+cargo install --git https://github.com/ianborders/buzz-tui
+```
+
+`cargo install` puts the binary in `~/.cargo/bin`, which rustup adds to your
+`PATH`. Building needs a C toolchain for the TLS and keychain crates —
+`xcode-select --install` on macOS, `build-essential pkg-config libssl-dev
+libdbus-1-dev` on Debian or Ubuntu.
+
+Rust 1.88 is the declared minimum and is checked against, not assumed.
+
+On Linux the key needs somewhere to live: a running Secret Service, which
+GNOME Keyring or KWallet provides. Without one, fall back to
+`BUZZ_PRIVATE_KEY`. Opening links uses `xdg-open`.
 
 Or from a clone: `cargo install --path .`
 

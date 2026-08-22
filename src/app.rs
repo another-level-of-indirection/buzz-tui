@@ -403,7 +403,7 @@ pub struct Workspace {
     pub notice: Option<String>,
     pub relay_label: String,
     /// The community's name, taken from the first label of the relay host —
-    /// `kybernesis.communities.buzz.xyz` is "kybernesis". There is no
+    /// `one.example.com` is "one". There is no
     /// server-side name to ask for: a community *is* its URL.
     pub name: String,
     /// What to call the newline key in the hints. Terminals that implement the

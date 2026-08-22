@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn author_colors_are_stable_for_a_key() {
-        let key = "57f3d82600303492c8f320f0801291423d053bcd328344bcef6092f376445b04";
+        let key = "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff";
         assert_eq!(author(key, false), author(key, false));
     }
 }
