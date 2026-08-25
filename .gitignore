@@ -2,3 +2,4 @@
 node_modules/
 *.lock
 !Cargo.lock
+.lsp/.cache/db.transit.json
