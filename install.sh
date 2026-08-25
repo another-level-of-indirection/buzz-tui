@@ -2,7 +2,7 @@
 # buzz-tui installer — builds the daemon, installs JS deps, symlinks launcher.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/ianborders/buzz-tui/hybrid-monorepo/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/another-level-of-indirection/buzz-tui/hybrid-monorepo/install.sh | bash
 # Or locally:
 #   ./install.sh
 set -euo pipefail
@@ -35,7 +35,7 @@ if [ -d "$REPO_DIR/.git" ]; then
   git pull --ff-only
 else
   echo "Cloning repository…"
-  git clone --branch hybrid-monorepo https://github.com/ianborders/buzz-tui.git "$REPO_DIR"
+  git clone --branch hybrid-monorepo https://github.com/another-level-of-indirection/buzz-tui.git "$REPO_DIR"
   cd "$REPO_DIR"
 fi
 

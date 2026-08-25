@@ -4,6 +4,7 @@ A terminal client for [Buzz](https://buzz.xyz) relays — hybrid architecture
 with a Rust session daemon and a TypeScript (Bun + Ink) shell.
 
 Forked from [ianborders/buzz-tui](https://github.com/ianborders/buzz-tui).
+Canonical fork: [another-level-of-indirection/buzz-tui](https://github.com/another-level-of-indirection/buzz-tui).
 The original ratatui client is preserved in `src/` as a parity checklist.
 
 ## Architecture
