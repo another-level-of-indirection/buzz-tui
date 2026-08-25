@@ -935,22 +935,54 @@ async fn main() -> Result<()> {
                                     .find(|(u, _)| *u == url)
                                     .map(|(_, s)| Arc::clone(s));
                                 if let Some(session) = session {
-                                    // Fetch channel metadata + member rosters
-                                    let filter = json!({
-                                        "kinds": [39000u32, 39002],
+                                    // Step 1: fetch rosters (kind:39002) where I'm a member
+                                    let roster_filter = json!({
+                                        "kinds": [39002u32],
                                         "#p": [keys.public_key().to_hex()],
                                         "limit": 500,
                                     });
-                                    if let Ok(events) = session.fetch(filter, FETCH_TIMEOUT).await {
+                                    let roster_events = session.fetch(roster_filter, FETCH_TIMEOUT).await.unwrap_or_default();
+
+                                    // Extract channel IDs from roster `d` tags
+                                    let channel_ids: Vec<String> = roster_events.iter().filter_map(|event| {
+                                        event.tags.iter().find_map(|t| {
+                                            let parts = t.as_slice();
+                                            if parts.first().map(String::as_str) == Some("d") {
+                                                parts.get(1).cloned()
+                                            } else {
+                                                None
+                                            }
+                                        })
+                                    }).collect();
+
+                                    // Apply rosters to store (carries member lists)
+                                    {
                                         let store = daemon.store_mut(&url);
-                                        for event in &events {
+                                        for event in &roster_events {
                                             store.apply(event);
                                         }
-                                        daemon.emit("store.channels_loaded", json!({
-                                            "community": url,
-                                            "count": events.len(),
-                                        })).await;
                                     }
+
+                                    // Step 2: fetch channel metadata (kind:39000) by channel IDs
+                                    if !channel_ids.is_empty() {
+                                        let metadata_filter = json!({
+                                            "kinds": [39000u32],
+                                            "#d": channel_ids,
+                                            "limit": 500,
+                                        });
+                                        if let Ok(metadata) = session.fetch(metadata_filter, FETCH_TIMEOUT).await {
+                                            let store = daemon.store_mut(&url);
+                                            for event in &metadata {
+                                                store.apply(event);
+                                            }
+                                        }
+                                    }
+
+                                    let total = daemon.store(&url).channels().len();
+                                    daemon.emit("store.channels_loaded", json!({
+                                        "community": url,
+                                        "count": total,
+                                    })).await;
                                     // Fetch profiles for all participants
                                     let authors = daemon.store(&url).all_participants();
                                     if !authors.is_empty() {

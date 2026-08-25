@@ -12,7 +12,7 @@ interface Props {
 export function MemberPane({ members, channelName, onClose }: Props) {
   const t = useTheme();
   return (
-    <Box flexDirection="column" width={28} borderStyle="single" borderColor={t.memberBorder}>
+    <Box flexDirection="column" width={28} borderStyle="single" borderColor={t.memberBorder} overflow="hidden">
       <Box paddingX={1} justifyContent="space-between">
         <Text bold color={t.memberHeader}>Members ({members.length})</Text>
         <Text color={t.helpText} dimColor>esc ✕</Text>

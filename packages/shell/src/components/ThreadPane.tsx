@@ -18,12 +18,18 @@ function formatTime(ts: number): string {
 export function ThreadPane({ messages, rootId, selectedIndex = 0, onClose }: Props) {
   const t = useTheme();
   return (
-    <Box flexDirection="column" width={40} borderStyle="single" borderColor={t.threadBorder}>
+    <Box
+      flexDirection="column"
+      width={40}
+      borderStyle="single"
+      borderColor={t.threadBorder}
+      overflow="hidden"
+    >
       <Box paddingX={1} justifyContent="space-between">
         <Text bold color={t.threadHeader}>Thread ({messages.length})</Text>
-        <Text color={t.helpText} dimColor>↑↓ select · ^R reply · esc ✕</Text>
+        <Text color={t.helpText} dimColor>↑↓ · ^R reply · esc ✕</Text>
       </Box>
-      <Box flexDirection="column" flexGrow={1} paddingX={1}>
+      <Box flexDirection="column" flexGrow={1} overflow="hidden">
         {messages.length === 0 ? (
           <Text color={t.emptyText} italic>Loading…</Text>
         ) : (
@@ -43,7 +49,7 @@ export function ThreadPane({ messages, rootId, selectedIndex = 0, onClose }: Pro
                   {msg.edited && <Text color={t.editedMark} dimColor>(edited)</Text>}
                 </Box>
                 <Box paddingLeft={14}>
-                  <Text>{msg.content}</Text>
+                  <Text wrap="truncate">{msg.content}</Text>
                 </Box>
                 {msg.reactions.length > 0 && (
                   <Box gap={1} paddingLeft={14}>

@@ -18,11 +18,17 @@ function formatTime(ts: number): string {
 export function Transcript({ messages, typing, channelName, selectedIndex }: Props) {
   const t = useTheme();
   return (
-    <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={t.border}>
+    <Box
+      flexDirection="column"
+      flexGrow={1}
+      borderStyle="single"
+      borderColor={t.border}
+      overflow="hidden"
+    >
       <Box paddingX={1}>
         <Text bold color={t.transcriptHeader}>#{channelName}</Text>
       </Box>
-      <Box flexDirection="column" flexGrow={1} paddingX={1}>
+      <Box flexDirection="column" flexGrow={1} overflow="hidden">
         {messages.length === 0 ? (
           <Text color={t.emptyText} italic>No messages yet</Text>
         ) : (
@@ -47,7 +53,7 @@ export function Transcript({ messages, typing, channelName, selectedIndex }: Pro
                   )}
                 </Box>
                 <Box paddingLeft={selectedIndex !== undefined ? 14 : 12}>
-                  <Text color={t.messageText}>{msg.content}</Text>
+                  <Text color={t.messageText} wrap="truncate">{msg.content}</Text>
                 </Box>
                 {msg.reactions.length > 0 && (
                   <Box gap={1} paddingLeft={selectedIndex !== undefined ? 14 : 12}>

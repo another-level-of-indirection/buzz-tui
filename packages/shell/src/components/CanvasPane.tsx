@@ -22,7 +22,7 @@ function formatTime(ts: number): string {
 export function CanvasPane({ canvas, channelName, onClose }: Props) {
   const t = useTheme();
   return (
-    <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={t.canvasBorder}>
+    <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={t.canvasBorder} overflow="hidden">
       <Box paddingX={1} justifyContent="space-between">
         <Text bold color={t.canvasHeader}>Canvas — #{channelName}</Text>
         <Text color={t.helpText} dimColor>^E edit · esc ✕</Text>
