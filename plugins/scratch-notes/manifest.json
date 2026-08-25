@@ -1,0 +1,23 @@
+{
+  "name": "scratch-notes",
+  "version": "0.1.0",
+  "description": "A simple scratch pad for notes that persist to a local file",
+  "entry": "index.tsx",
+  "panes": [
+    {
+      "id": "scratch-notes",
+      "title": "Scratch Notes",
+      "position": "right"
+    }
+  ],
+  "commands": [
+    {
+      "name": "notes",
+      "description": "Toggle scratch notes pane"
+    },
+    {
+      "name": "note",
+      "description": "Append a note — /note <text>"
+    }
+  ]
+}

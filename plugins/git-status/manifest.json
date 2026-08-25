@@ -1,0 +1,27 @@
+{
+  "name": "git-status",
+  "version": "0.1.0",
+  "description": "Shows git status of the current working directory in a side pane",
+  "entry": "index.tsx",
+  "panes": [
+    {
+      "id": "git-status",
+      "title": "Git Status",
+      "position": "right"
+    }
+  ],
+  "commands": [
+    {
+      "name": "git",
+      "description": "Toggle git status pane"
+    }
+  ],
+  "keybindings": [
+    {
+      "key": "g",
+      "ctrl": true,
+      "shift": true,
+      "action": "toggle-pane:git-status"
+    }
+  ]
+}

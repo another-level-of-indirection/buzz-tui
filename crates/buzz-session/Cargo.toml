@@ -1,25 +1,11 @@
-[workspace]
-members = ["crates/buzz-session", "crates/buzz-sessiond"]
-resolver = "2"
-
-# The original single-crate manifest is preserved below so `cargo build -p
-# buzz-tui` still compiles the ratatui TUI. It serves as the parity checklist
-# for the hybrid shell and will be removed once Phase 3 is complete.
-
 [package]
-name = "buzz-tui"
+name = "buzz-session"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.88.0"
 license = "Apache-2.0"
-description = "Terminal client for a Buzz relay"
-repository = "https://github.com/ianborders/buzz-tui"
+description = "Buzz relay session library — session, store, identity, readstate"
 
-[[bin]]
-name = "buzz-tui"
-path = "src/main.rs"
-
-# ── Buzz ────────────────────────────────────────────────────────────────────
 [dependencies.buzz-sdk]
 git = "https://github.com/block/buzz.git"
 rev = "84c095f8bea14b55373e2d867100abe37aa6061e"
@@ -43,11 +29,6 @@ chrono = { version = "0.4", features = ["serde"] }
 anyhow = "1"
 futures-util = "0.3"
 zeroize = "1.8"
-pulldown-cmark = { version = "0.13.4", default-features = false }
-ratatui = "0.30"
-crossterm = { version = "0.29", features = ["event-stream"] }
-unicode-width = "0.2"
-unicode-segmentation = "1"
 dirs = "6"
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 rpassword = "7"

@@ -1,0 +1,25 @@
+[package]
+name = "buzz-sessiond"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88.0"
+license = "Apache-2.0"
+description = "Headless Buzz session daemon — JSON-RPC over stdio"
+
+[[bin]]
+name = "buzz-sessiond"
+path = "src/main.rs"
+
+[dependencies.buzz-sdk]
+git = "https://github.com/block/buzz.git"
+rev = "84c095f8bea14b55373e2d867100abe37aa6061e"
+
+[dependencies]
+buzz-session = { path = "../buzz-session" }
+nostr = { version = "0.44", features = ["nip44", "nip98"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util", "io-std"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+anyhow = "1"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }

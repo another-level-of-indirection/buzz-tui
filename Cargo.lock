@@ -234,6 +234,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "buzz-session"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "buzz-core",
+ "buzz-sdk",
+ "buzz-ws-client",
+ "chrono",
+ "dirs",
+ "futures-util",
+ "keyring",
+ "nostr",
+ "rpassword",
+ "rustls",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "uuid",
+ "zeroize",
+]
+
+[[package]]
+name = "buzz-sessiond"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "buzz-sdk",
+ "buzz-session",
+ "nostr",
+ "rustls",
+ "serde",
+ "serde_json",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "buzz-tui"
 version = "0.1.0"
 dependencies = [

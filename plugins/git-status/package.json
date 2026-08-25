@@ -1,0 +1,11 @@
+{
+  "name": "@buzz-tui/plugin-git-status",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "react": "^19.2.8",
+    "ink": "^7.1.1",
+    "@types/react": "^19.2.18"
+  }
+}
