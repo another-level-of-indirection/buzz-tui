@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [hybrid-monorepo, main]
+  pull_request:
+    branches: [hybrid-monorepo, main]
+
+jobs:
+  rust-check:
+    name: cargo check (buzz-session)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.88.0"
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check -p buzz-session
