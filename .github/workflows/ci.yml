@@ -16,4 +16,6 @@ jobs:
         with:
           toolchain: "1.88.0"
       - uses: Swatinem/rust-cache@v2
+      - name: Install Linux deps (keyring → dbus)
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
       - run: cargo check -p buzz-session
